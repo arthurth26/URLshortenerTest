@@ -1,0 +1,16 @@
+{
+  "name": "urlshortenertest",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "jest": "^30.2.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.80.0"
+  }
+}
