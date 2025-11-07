@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-const dbURL = import.meta.env.dbURL;
-const apiKey = import.meta.env.apiKey;
+const dbURL = process.env.dbURL;
+const apiKey = process.env.apiKey;
 
 const supabase = createClient(dbURL!, apiKey!)
 
