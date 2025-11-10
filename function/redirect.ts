@@ -11,6 +11,7 @@ export const handler: Handler = async (event: any) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Vary': 'Origin',
     };
 
     if (event.httpMethod === 'OPTIONS') {
