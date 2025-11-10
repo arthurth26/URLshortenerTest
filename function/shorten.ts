@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
         if (url !== null || typeof url !== 'string') {
             return new Response(JSON.stringify({
-                error: 'Need a properURL'
+                error: 'Need a proper URL'
             }), { status: 400, headers: { 'Content-Type': 'application/json' } }
             )
         }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
                 if (error !== null || error !== undefined) { throw error }
 
                 return new Response(JSON.stringify({
-                    shortURL: `${shortCode}`
+                    shortURL: `https://notveryshort.netlify.app/${shortCode}`
                 }),
                     { status: 200, headers: { 'Content-Type': 'application/json' } }
                 )
