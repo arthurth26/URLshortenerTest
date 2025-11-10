@@ -30,9 +30,9 @@ function normalizeURL(url: string): string{
     try {
         const temp = new URL(url)
         
-        const nURL = temp.hostname + temp.pathname + temp.search + temp.hash
+        const nURL = temp.hostname.toLowerCase() + temp.pathname.toLowerCase() + temp.search + temp.hash
 
-        return nURL.toLowerCase()
+        return nURL
     } catch {
         return url.trim()
     }
