@@ -26,6 +26,18 @@ function isValidUrl(url: string): boolean {
     }
 }
 
+function normalizeURL(url: string): string{
+    try {
+        const temp = new URL(url)
+        
+        const nURL = temp.hostname + temp.pathname + temp.search + temp.hash
+
+        return nURL.toLowerCase()
+    } catch {
+        return url.trim()
+    }
+}
+
 async function checkURLinDB(code: string): Promise<boolean> {
     const { data, error } = await supabase.from('links').select('id').eq('short_code', code).maybeSingle()
 
@@ -77,6 +89,8 @@ export const handler: Handler = async (event) => {
             body: JSON.stringify({ error: 'Need proper URL' })
         }
     }
+
+    url = normalizeURL(url)
 
     const { data: existing } = await supabase
         .from('links')
