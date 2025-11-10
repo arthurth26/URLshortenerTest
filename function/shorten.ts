@@ -61,6 +61,7 @@ export const handler: Handler = async (event) => {
         const body = JSON.parse(event.body ?? '{}')
         url = body.url.trim()
         custom = body.custom?.trim()
+        console.log(url, custom)
     } catch {
         return {
             statusCode: 400,

@@ -37,7 +37,7 @@ export const handler: Handler = async (event: any) => {
         const { data } = await supabase.from('links').select('original_url').eq('short_code', code).single()
 
         if (data === null || data === undefined) {
-            return { statusCode: 404, headers: corsHeaders, body: JSON.stringify({error: 'short URL not found'}) }
+            return { statusCode: 404, headers: corsHeaders, body: JSON.stringify({error: `short URL not found ${code}`}) }
         }
 
         return {
