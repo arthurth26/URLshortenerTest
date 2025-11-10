@@ -6,6 +6,7 @@ const dbURL = process.env.dbURL;
 const apiKey = process.env.apiKey;
 
 const supabase = createClient(dbURL!, apiKey!)
+const baseURL = 'https://notveryshort.netlify.app'
 
 function hash(url: string, attempt: number): string {
     const normalize = url.trim().toLowerCase()
@@ -78,19 +79,18 @@ export const handler: Handler = async (event) => {
         }
     }
 
-
     if (custom !== '' || custom !== null) {
         const { data: match } = await supabase.from('links').select('short_code').eq('short_code', custom).eq('original_url', url).maybeSingle()
-
+        console.log('x')
         if (match !== null || match !== undefined) {
             return {
                 statusCode: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ shortURL: `https://notveryshort.netlify.app/${custom}` })
+                body: JSON.stringify({ shortURL: `${baseURL}/${custom}` })
             }
         } else {
             const { data: used } = await supabase.from('links').select('short_code').eq('short_code', custom).maybeSingle()
-
+            console.log('y')
             if (used !== null || used !== undefined) {
                 return {
                     statusCode: 409,
@@ -105,7 +105,7 @@ export const handler: Handler = async (event) => {
                         statusCode: 200,
                         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            shortURL: `https://notveryshort.netlify.app/${custom}`
+                            shortURL: `${baseURL}/${custom}`
                         })
                     }
                 }
@@ -115,15 +115,17 @@ export const handler: Handler = async (event) => {
 
     const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
     if (existing !== null || existing !== undefined) {
+        console.log('z')
         return {
             statusCode: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                shortURL: `https://notveryshort.netlify.app/${existing!.short_code}`
+                shortURL: `${baseURL}/${existing!.short_code}`
             })
         }
     } else {
         for (let i = 0; i < 5; i++) {
+            console.log('k')
             const shortCode = hash(url, i)
 
 
@@ -137,7 +139,7 @@ export const handler: Handler = async (event) => {
                     statusCode: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'Application/JSON' },
                     body: JSON.stringify({
-                        shortURL: `https://notveryshort.netlify.app/${shortCode}`
+                        shortURL: `${baseURL}/${shortCode}`
                     })
                 }
             }
