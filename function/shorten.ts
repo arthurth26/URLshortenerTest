@@ -79,7 +79,7 @@ export const handler: Handler = async (event) => {
         }
     }
 
-    if (custom !== '' || custom !== null) {
+    if (custom) {
         const { data: match } = await supabase.from('links').select('short_code').eq('short_code', custom).eq('original_url', url).maybeSingle()
         console.log('x')
         if (match) {
