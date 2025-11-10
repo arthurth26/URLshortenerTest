@@ -122,10 +122,11 @@ export const handler: Handler = async (event) => {
         }
     } catch (err) {
         console.error('Shortener error:', err)
-    } return {
-        statusCode: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'Application/json' },
-        body: JSON.stringify({ error: 'Internal Server Error' })
+        return {
+            statusCode: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'Application/json' },
+            body: JSON.stringify({ error: `Internal Server Error: ${err}` })
+        }
     }
 }
 
