@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Handler } from '@netlify/functions';
 import crypto from 'crypto';
 
 const dbURL = process.env.dbURL;
@@ -34,32 +35,57 @@ async function checkURLinDB(code: string): Promise<boolean> {
     }
 }
 
-export async function POST(request: Request) {
+
+export const handler: Handler = async (event) => {
+    const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    };
+
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 200,
+            headers: corsHeaders,
+            body: ''
+        }
+    }
+
+    if (event.httpMethod !== 'POST') {
+        return { statusCode: 405, headers: corsHeaders, body: JSON.stringify({ error: 'Method not allowed' }) };
+    }
+
+    let url: string
     try {
-        const { url } = await request.json() as { url: string };
-
-        if (url !== null || typeof url !== 'string') {
-            return new Response(JSON.stringify({
-                error: 'Need a proper URL'
-            }), { status: 400, headers: { 'Content-Type': 'application/json' } }
-            )
+        const body = JSON.parse(event.body ?? '{}')
+        url = body.url
+    } catch {
+        return {
+            statusCode: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'Invalid JSON' })
         }
+    }
 
-        if (isValidUrl(url) === false) {
-            return new Response(JSON.stringify({ error: 'Invalid URL' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            })
+    if (isValidUrl(url) === false) {
+        return {
+            statusCode: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'Need proper URL' })
         }
+    }
 
+    try {
         const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
 
-        if (existing !== null || existing !== undefined) {
-            return new Response(JSON.stringify({
-                shortURL: `${existing!.short_code}`,
-                alreadyExists: true,
-            }),
-                { status: 200, headers: { 'Content-Type': 'application/json' } })
+        if (existing !== null) {
+            return {
+                statusCode: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    shortURL: `https://notveryshort.netlify.app/${existing.short_code}`
+                })
+            }
         }
 
         for (let i = 0; i < 5; i++) {
@@ -70,20 +96,28 @@ export async function POST(request: Request) {
 
                 if (error !== null || error !== undefined) { throw error }
 
-                return new Response(JSON.stringify({
-                    shortURL: `https://notveryshort.netlify.app/${shortCode}`
-                }),
-                    { status: 200, headers: { 'Content-Type': 'application/json' } }
-                )
+                return {
+                    statusCode: 200,
+                    headers: { ...corsHeaders, 'Content-Type': 'Application/JSON' },
+                    body: JSON.stringify({ 
+                        shortenURL: `https://notveryshort.netlify.app/${shortCode}` 
+                    })
+                }
             }
         }
 
-        return new Response(JSON.stringify({error: 'failed to generate unique code'}), {status: 500, headers:{'Content-Type':'application/json'}})
-
+        return {
+            statusCode: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'failed to generate unique code' })
+        }
     } catch (err) {
         console.error('Shortener error:', err)
-        return new Response(JSON.stringify({
-            error: 'Internal Server Error'
-        }), { status: 500, headers: { 'Content-Type': 'application/json' } })
+    } return {
+        statusCode: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'Application/json' },
+        body: JSON.stringify({ error: 'Internal Server Error' })
     }
 }
+
+
