@@ -92,7 +92,7 @@ export const handler: Handler = async (event) => {
                 statusCode: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    shortURL: `https://notveryshort.netlify.app/${existing!.short_code}`
+                    shortURL: `https://notveryshort.netlify.app/.netlify/functions/redirect/${existing!.short_code}`
                 })
             }
         }
@@ -110,7 +110,7 @@ export const handler: Handler = async (event) => {
                     statusCode: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'Application/JSON' },
                     body: JSON.stringify({
-                        shortURL: `https://notveryshort.netlify.app/${shortCode}`
+                        shortURL: `https://notveryshort.netlify.app/.netlify/functions/redirect/${existing!.short_code}`
                     })
                 }
             }
