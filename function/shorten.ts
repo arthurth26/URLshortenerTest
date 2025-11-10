@@ -107,9 +107,9 @@ export const handler: Handler = async (event) => {
 
     if (custom) {
         const { data: used } = await supabase.from('links').select('short_code').eq('short_code', custom).maybeSingle()
-        console.log('y')
+
         if (used) {
-            console.log('kek')
+
             return {
                 statusCode: 409,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
