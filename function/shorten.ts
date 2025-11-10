@@ -7,8 +7,6 @@ const apiKey = process.env.apiKey;
 
 const supabase = createClient(dbURL!, apiKey!)
 
-let n = 0
-
 function hash(url: string, attempt: number): string {
     const normalize = url.trim().toLowerCase()
     const salt = new Date().getMonth() * new Date().getFullYear() - new Date().getSeconds() + Math.random()
@@ -38,9 +36,6 @@ async function checkURLinDB(code: string): Promise<boolean> {
 }
 
 export const handler: Handler = async (event) => {
-    const { count } = await supabase.from('links').select('*', { count: 'exact' })
-    n = count ?? 0
-
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -103,7 +98,7 @@ export const handler: Handler = async (event) => {
                 }
             } else {
                 for (let i = 0; i < 3; i++) {
-                    const { error } = await supabase.from('links').insert({ id:n, short_code: custom, original_url: url })
+                    const { error } = await supabase.from('links').insert({ short_code: custom, original_url: url })
                     if (error) { throw error }
                     return {
                         statusCode: 200,
@@ -132,7 +127,7 @@ export const handler: Handler = async (event) => {
 
 
             if ((await checkURLinDB(shortCode)) === false) {
-                const { error } = await supabase.from('links').insert({ id: n, short_code: shortCode, original_url: url })
+                const { error } = await supabase.from('links').insert({ short_code: shortCode, original_url: url })
                 console.log(error)
 
                 if (error) { throw error }
