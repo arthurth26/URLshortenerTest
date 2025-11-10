@@ -87,7 +87,7 @@ export const handler: Handler = async (event) => {
     try {
         const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
 
-        if (existing !== null || existing !== undefined) {
+        if (existing) {
             return {
                 statusCode: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
