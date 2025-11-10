@@ -82,7 +82,7 @@ export const handler: Handler = async (event) => {
     if (custom !== '' || custom !== null) {
         const { data: match } = await supabase.from('links').select('short_code').eq('short_code', custom).eq('original_url', url).maybeSingle()
         console.log('x')
-        if (match !== null || match !== undefined) {
+        if (match) {
             return {
                 statusCode: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -91,7 +91,8 @@ export const handler: Handler = async (event) => {
         } else {
             const { data: used } = await supabase.from('links').select('short_code').eq('short_code', custom).maybeSingle()
             console.log('y')
-            if (used !== null || used !== undefined) {
+            if (used) {
+                console.log('kek')
                 return {
                     statusCode: 409,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -114,7 +115,7 @@ export const handler: Handler = async (event) => {
     }
 
     const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
-    if (existing !== null || existing !== undefined) {
+    if (existing) {
         console.log('z')
         return {
             statusCode: 200,
@@ -127,7 +128,6 @@ export const handler: Handler = async (event) => {
         for (let i = 0; i < 5; i++) {
             console.log('k')
             const shortCode = hash(url, i)
-
 
             if ((await checkURLinDB(shortCode)) === false) {
                 const { error } = await supabase.from('links').insert({ short_code: shortCode, original_url: url })
