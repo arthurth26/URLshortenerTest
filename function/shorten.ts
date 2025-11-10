@@ -68,6 +68,14 @@ export const handler: Handler = async (event) => {
         }
     }
 
+    if (!url || typeof url !== 'string') {
+        return {
+            statusCode: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'URL is required' }),
+        };
+    }
+
     if (isValidUrl(url) === false) {
         return {
             statusCode: 400,
@@ -79,12 +87,12 @@ export const handler: Handler = async (event) => {
     try {
         const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
 
-        if (existing !== null) {
+        if (existing !== null || existing !== undefined) {
             return {
                 statusCode: 200,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    shortURL: `https://notveryshort.netlify.app/${existing.short_code}`
+                    shortURL: `https://notveryshort.netlify.app/${existing!.short_code}`
                 })
             }
         }
@@ -100,8 +108,8 @@ export const handler: Handler = async (event) => {
                 return {
                     statusCode: 200,
                     headers: { ...corsHeaders, 'Content-Type': 'Application/JSON' },
-                    body: JSON.stringify({ 
-                        shortenURL: `https://notveryshort.netlify.app/${shortCode}` 
+                    body: JSON.stringify({
+                        shortURL: `https://notveryshort.netlify.app/${shortCode}`
                     })
                 }
             }
