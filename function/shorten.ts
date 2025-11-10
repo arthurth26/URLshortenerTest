@@ -60,9 +60,9 @@ export const handler: Handler = async (event) => {
     let custom: string;
     try {
         const body = JSON.parse(event.body ?? '{}')
-        url = body.url.trim()
+        let preNormalizeURL = new URL(body.url)
+        url = `${preNormalizeURL.protocol}//${preNormalizeURL.host.replace(/^www\./, '')}${preNormalizeURL.pathname.replace(/\/+$/, '')}${preNormalizeURL.search}`;
         custom = body.custom?.trim()
-        console.log(url, custom)
     } catch {
         return {
             statusCode: 400,
@@ -79,54 +79,57 @@ export const handler: Handler = async (event) => {
         }
     }
 
-    if (custom) {
-        const { data: match } = await supabase.from('links').select('short_code').eq('short_code', custom).eq('original_url', url).maybeSingle()
-        console.log('x')
-        if (match) {
-            return {
-                statusCode: 200,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ shortURL: `${baseURL}/${custom}` })
-            }
-        } else {
-            const { data: used } = await supabase.from('links').select('short_code').eq('short_code', custom).maybeSingle()
-            console.log('y')
-            if (used) {
-                console.log('kek')
-                return {
-                    statusCode: 409,
-                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ error: 'Code already being used, please enter a new one OR try to generate one' })
-                }
-            } else {
-                for (let i = 0; i < 3; i++) {
-                    const { error } = await supabase.from('links').insert({ short_code: custom, original_url: url })
-                    if (error) { throw error }
-                    return {
-                        statusCode: 200,
-                        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            shortURL: `${baseURL}/${custom}`
-                        })
-                    }
-                }
-            }
-        }
+    const { data: existing, error } = await supabase
+        .from('links')
+        .select('short_code')
+        .eq('original_url', url)
+        .single();
+
+    if (error) {
+        console.error('DB error:', error);
+        return {
+            statusCode: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'Database error' })
+        };
     }
 
-    const { data: existing } = await supabase.from('links').select('short_code').eq('original_url', url).maybeSingle()
     if (existing) {
-        console.log('z')
         return {
             statusCode: 200,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                shortURL: `${baseURL}/${existing!.short_code}`
+                shortURL: `${baseURL}/${existing.short_code}`,
+                note: 'Someone already shortened it before sorry'
             })
+        };
+    }
+
+    if (custom) {
+        const { data: used } = await supabase.from('links').select('short_code').eq('short_code', custom).maybeSingle()
+        console.log('y')
+        if (used) {
+            console.log('kek')
+            return {
+                statusCode: 409,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: 'Code already being used, please enter a new one OR try to generate one' })
+            }
+        } else {
+            for (let i = 0; i < 3; i++) {
+                const { error } = await supabase.from('links').insert({ short_code: custom, original_url: url })
+                if (error) { throw error }
+                return {
+                    statusCode: 200,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        shortURL: `${baseURL}/${custom}`
+                    })
+                }
+            }
         }
     } else {
         for (let i = 0; i < 5; i++) {
-            console.log('k')
             const shortCode = hash(url, i)
 
             if ((await checkURLinDB(shortCode)) === false) {
@@ -150,6 +153,5 @@ export const handler: Handler = async (event) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'failed to generate unique code' })
     }
-    
 }
 

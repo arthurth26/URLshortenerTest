@@ -29,7 +29,7 @@ export const handler: Handler = async (event: any) => {
     const path = event.path
     const code = path.replace(/^\/s\//, '').split('/').pop()?.trim();
 
-    if (code === null || !/^[a-zA-Z0-9]{6,}$/.test(code)) {
+    if (code === null || !/^[a-zA-Z0-9]$/.test(code)) {
         return { statusCode: 400, body: 'invalid code' }
     }
 
