@@ -102,6 +102,7 @@ export const handler: Handler = async (event) => {
 
             if ((await checkURLinDB(shortCode)) === false) {
                 const { error } = await supabase.from('links').insert({ short_code: shortCode, original_url: url })
+                console.log(error)
 
                 if (error) { throw error }
 
