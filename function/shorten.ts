@@ -60,8 +60,7 @@ export const handler: Handler = async (event) => {
     let custom: string;
     try {
         const body = JSON.parse(event.body ?? '{}')
-        let preNormalizeURL = new URL(body.url)
-        url = `${preNormalizeURL.protocol}//${preNormalizeURL.host.replace(/^www\./, '')}${preNormalizeURL.pathname.replace(/\/+$/, '')}${preNormalizeURL.search}`;
+        url = body.url.trim()
         custom = body.custom?.trim()
     } catch {
         return {
@@ -79,20 +78,11 @@ export const handler: Handler = async (event) => {
         }
     }
 
-    const { data: existing, error } = await supabase
+    const { data: existing } = await supabase
         .from('links')
         .select('short_code')
         .eq('original_url', url)
         .single();
-
-    if (error) {
-        console.error('DB error:', error);
-        return {
-            statusCode: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Database error' })
-        };
-    }
 
     if (existing) {
         return {
