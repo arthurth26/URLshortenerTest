@@ -42,7 +42,7 @@ export const handler: Handler = async (event: any) => {
 
         return {
             statusCode: 301,
-            headers: { Location: data.original_url }
+            headers: { Location: `https://${data.original_url}` }
         }
 
     } catch (err: any) {
