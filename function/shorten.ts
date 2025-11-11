@@ -9,7 +9,7 @@ const supabase = createClient(dbURL!, apiKey!)
 const baseURL = 'https://notveryshort.netlify.app'
 
 function hash(url: string, attempt: number): string {
-    const normalize = url.trim().toLowerCase()
+    const normalize = url.trim()
     const salt = new Date().getMonth() * new Date().getFullYear() - new Date().getSeconds() + Math.random()
     const data = `${normalize}${salt}${attempt}`
     const hash = crypto.createHash('sha256').update(data, 'utf-8')
@@ -30,7 +30,7 @@ function normalizeURL(url: string): string{
     try {
         const temp = new URL(url)
         
-        const nURL = temp.hostname.toLowerCase() + temp.pathname.toLowerCase() + temp.search + temp.hash
+        const nURL = temp.hostname + temp.pathname + temp.search + temp.hash
 
         return nURL
     } catch {
